@@ -1,0 +1,40 @@
+version: '3'
+
+volumes:
+  habrdb-data:
+networks:
+  host:
+    driver: bridge
+
+services:
+  db_auth:
+    build:
+      context: DB
+    container_name: db_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=pyramid
+    networks: 
+      - host
+    volumes:
+      - habrdb-data:/var/lib/postgresql/data
+  cursach_server:
+    build:
+      context: server
+      args:
+        POSTGRES_PORT: 5432
+        POSTGRES_HOST: 'db_auth'
+        POSTGRES_USER: 'postgres'
+        POSTGRES_PASSWORD: 'root'
+        POSTGRES_DB: 'pyramid'
+    container_name: my_qt_project
+    restart: always
+    ports: 
+      - "1234:1234"
+    networks: 
+      - host
+    depends_on:
+      - db_auth
